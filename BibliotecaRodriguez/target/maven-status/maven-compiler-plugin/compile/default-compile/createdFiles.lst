@@ -1,4 +1,5 @@
 DataBaseController\DataBaseConnection.class
 com\mycompany\bibliotecarodriguez\Libros.class
+Utilities\Functions.class
 com\mycompany\bibliotecarodriguez\BibliotecaRodriguez.class
 com\mycompany\bibliotecarodriguez\Usuarios.class

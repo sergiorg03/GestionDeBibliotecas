@@ -40,4 +40,18 @@ public class DataBaseConnection {
             System.out.println("No se logró cerrar la conexión. ");
         }
     }
+    
+    public boolean testConnection(){
+        boolean exitosa = false;
+        try {    
+            if(!con.isClosed() && con != null){
+                exitosa = true;
+            }
+        } catch (SQLException ex) {
+            System.out.println("Se produjo un error al probar la conexion. ");
+            //ex.printStackTrace();
+        }finally{
+            return exitosa;
+        }
+    }
 }

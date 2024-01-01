@@ -26,8 +26,9 @@ public class BibliotecaRodriguez {
             System.out.println("1. Registrar un nuevo usuario.                                       *");
             System.out.println("2. Modificar un usuario.                                             *");
             System.out.println("3. Eliminar un usuario.                                              *");
-            System.out.println("4.                                                                   *");
+            //System.out.println("4.                                                                   *");
             System.out.println("9. Realizar un test de conexion.                                     *");
+            System.out.println("10. Crear base de datos.                                              *");
             System.out.println("0. Salir del programa.                                               *");
             System.out.println("**********************************************************************");
             System.out.println();
@@ -71,6 +72,9 @@ public class BibliotecaRodriguez {
                 case 9:
                     testConnection(con);
                     break;
+                case 10:
+                    createDataBase();
+                    break;
                 case 0:
                     con.closeConnection();
                     System.out.println("Adios! ");
@@ -92,5 +96,7 @@ public class BibliotecaRodriguez {
         }else System.out.println("Se produjo un error al probar la conexion. ");
     }
     
-    
+    protected static void createDataBase(){
+        
+    }
 }

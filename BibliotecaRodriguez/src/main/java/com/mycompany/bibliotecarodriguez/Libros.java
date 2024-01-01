@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class Libros {
 
     // Atributos de la clase
+    private int id;
     private String nombre;
     private String descripcion;
     private String autor;
@@ -15,6 +16,7 @@ public class Libros {
     
     // Constructor por defecto
     public Libros(){
+        this.id = -1;
         this.nombre = "";
         this.descripcion = "";
         this.autor = "";
@@ -22,7 +24,8 @@ public class Libros {
     }
     
     // Constructor con parametros
-    public Libros(String nombre, String desc, String autor, Date fechaPublicacion){
+    public Libros(int id, String nombre, String desc, String autor, Date fechaPublicacion){
+        this.id = id;
         this.nombre = nombre;
         this.descripcion = desc;
         this.autor = autor;
@@ -30,6 +33,10 @@ public class Libros {
     }
     
     // Métodos GET
+    public int getID() {
+        return id;
+    }
+    
     public String getNombre() {
         return nombre;
     }
@@ -47,6 +54,10 @@ public class Libros {
     }
     
     // Métodos SET
+    public void setID(int id) {
+        this.id = id;
+    }
+    
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }

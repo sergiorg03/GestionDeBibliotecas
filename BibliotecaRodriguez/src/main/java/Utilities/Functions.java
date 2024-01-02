@@ -76,8 +76,8 @@ public class Functions {
         boolean valido = false;
         try {
             Integer.parseInt(cadena);
+            valido = true;
         } catch (NumberFormatException e) {
-            
         }finally{
             return valido;
         }

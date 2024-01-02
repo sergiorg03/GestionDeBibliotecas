@@ -161,7 +161,7 @@ public class DataBaseConnection {
 
     public List<Usuarios> mostrarUsuarios(String dni){
 
-        final String sql = "SELECT dni, nombre, apellidos, mail, telf FROM usuarios ";
+        final String sql = "SELECT dni, nombre, apellidos, mail, telf FROM usuarios";
         List<Usuarios> listUsers = new ArrayList<Usuarios>();
 
         if (dni == "" || dni == null) {
@@ -172,7 +172,7 @@ public class DataBaseConnection {
                 
                 while (resultado.next()) {
 
-                    Usuarios u = new Usuarios(resultado.getString(0), resultado.getString(1), resultado.getString(2), resultado.getString(3), resultado.getString(4));
+                    Usuarios u = new Usuarios(resultado.getString(1), resultado.getString(2), resultado.getString(3), resultado.getString(4), resultado.getString(5));
                     listUsers.add(u);
                     
                 }
@@ -180,26 +180,57 @@ public class DataBaseConnection {
                 resultado.close();
             } catch (SQLException e) {
                 System.out.println();
-                //e.printStackTrace();
+                e.printStackTrace();
             }
         }else{
-            String sql_dni = sql+"WHERE UPPER(DNI) = UPPER(?)";
+            String sql_dni = sql.concat(" WHERE UPPER(DNI) = UPPER(?)");
 
-            try (Statement s = con.createStatement()) {
+            try (PreparedStatement pstmt = con.prepareStatement(sql_dni)) {
                 
-                ResultSet r = s.executeQuery(sql_dni);
+                //Asignar variable
+                pstmt.setString(1, dni);
+                
+                ResultSet r = pstmt.executeQuery();
 
                 while (r.next()) {
-                    Usuarios u = new Usuarios(r.getString(0), r.getString(1), r.getString(2), r.getString(3), r.getString(4));
+                    Usuarios u = new Usuarios(r.getString(1), r.getString(2), r.getString(3), r.getString(4), r.getString(5));
                     listUsers.add(u);
                 }
 
-            } catch (Exception e) {
+            } catch (SQLException e) {
+                e.printStackTrace();
                 System.out.println();
             }
             
         }
         
         return listUsers;
+    }
+
+    public void eliminarUser(String dni) {
+        
+        final String sql = "DELETE FROM usuarios WHERE UPPER(DNI) = UPPER(?)";
+        
+        if (dni.isBlank()) {
+            
+        }else{
+            List<Usuarios> u = mostrarUsuarios(dni);
+            
+            if (!u.isEmpty()) {
+                try(PreparedStatement pstmt = con.prepareStatement(sql);){
+                    
+                    pstmt.setString(1, dni);
+                    
+                    pstmt.executeUpdate();
+                    
+                    System.out.println(f.COLORES.get("AZUL".toUpperCase())+"Se borro al usuario correctamente. "+f.COLORES.get("RESET".toUpperCase()));
+                    
+                }catch(SQLException sqle){
+                    System.out.println(f.COLORES.get("ROJO".toUpperCase())+"Se produjo un error a la hora de borrar el usuario. "+f.COLORES.get("RESET".toUpperCase()));
+                }
+            }else{
+                System.out.println(f.COLORES.get("ROJO".toUpperCase())+"El DNI introducido no se corresponde con ningun usuario. "+f.COLORES.get("RESET".toUpperCase()));
+            }
+        }
     }
 }

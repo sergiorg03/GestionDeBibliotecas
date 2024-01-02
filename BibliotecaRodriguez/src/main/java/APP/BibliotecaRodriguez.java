@@ -33,12 +33,14 @@ public class BibliotecaRodriguez {
             System.out.println("9. Realizar un test de conexion.                                     *");
             System.out.println("10. Crear base de datos.                                             *");
             System.out.println("11. Reiniciar base de datos.                                         *");
+            System.out.println("12. Limpiar terminal.                                                *");
             System.out.println("0. Salir del programa.                                               *");
             System.out.println("**********************************************************************");
             System.out.println();
             
-            opcion = scan.nextInt();
-            scan.nextLine();
+            String op = scan.nextLine();
+            opcion = (f.esNumerico(op )? Integer.parseInt(op): -1);
+            
             switch (opcion) {
                 case 1:
                     System.out.println("introduzca el DNI del usuario: ");
@@ -85,8 +87,11 @@ public class BibliotecaRodriguez {
                 case 10:
                     createDataBase(con);
                     break;
-                   case 11:
+                case 11:
                     resetDataBase(con);
+                    break;
+                case 12:
+                    cleanScreen();
                     break;
                 case 0:
                     con.closeConnection();
@@ -100,16 +105,19 @@ public class BibliotecaRodriguez {
     }
 
     private static void deleteUser(DataBaseConnection con, String dni) {
-
+        con.eliminarUser(dni);
     }
 
     private static void showAllUsers(DataBaseConnection con) {
         List<Usuarios> listaUs = con.mostrarUsuarios(null);
+        
         for (int i = 0; i < listaUs.size(); i++) {
+            System.out.println("");
             System.out.println("Usuario "+i);
             System.out.println("*****************************************************");
             System.out.println(f.COLORES.get("CIAN".toUpperCase())+listaUs.get(i).toString()+f.COLORES.get("RESET".toUpperCase()));
             System.out.println("*****************************************************");
+            System.out.println("");
         }
     }
 
@@ -134,8 +142,29 @@ public class BibliotecaRodriguez {
 
     protected static void mostrarUsuario(DataBaseConnection con, String dni){
         List<Usuarios> listUsers = con.mostrarUsuarios(dni);
+        for (int i = 0; i < listUsers.size(); i++) {
+            System.out.println("Usuario "+i);
+            System.out.println("*****************************************************");
+            System.out.println(f.COLORES.get("CIAN".toUpperCase())+listUsers.get(i).toString()+f.COLORES.get("RESET".toUpperCase()));
+            System.out.println("*****************************************************");
+        }
+    }
+    
+    public static void cleanScreen(){
         
-        listUsers.get(0).toString();
+        String os = System.getProperty("os.name").toLowerCase();
+        String comando = "";
         
+        if (os.contains("win")) {
+            comando = "cls";
+        }else{
+            comando = "clear";
+        }
+        
+        try {
+            new ProcessBuilder(comando).inheritIO().start().waitFor();
+        } catch (Exception e) {
+            System.out.println(f.COLORES.get("ROJO".toUpperCase())+"Se produjjo un error a la hora de limpiar la pantalla. "+f.COLORES.get("RESET".toUpperCase()));
+        }
     }
 }

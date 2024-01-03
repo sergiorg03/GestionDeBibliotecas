@@ -83,4 +83,9 @@ public class Functions {
         }
     }
     
+    public void mensajeColorido(String color, String msg){
+        String c = COLORES.get(color.toUpperCase());
+        System.out.println(c+msg+COLORES.get("RESET".toUpperCase()));
+    }
+    
 }

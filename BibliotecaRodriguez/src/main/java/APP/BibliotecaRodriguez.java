@@ -30,6 +30,8 @@ public class BibliotecaRodriguez {
             System.out.println("2. Mostrar un usuario.                                               *");
             System.out.println("3. Mostrar todos los usuarios.                                       *");
             System.out.println("4. Eliminar un usuario.                                              *");
+            System.out.println("5. Modificar un usuario.                                             *");
+            System.out.println("6. Insertar un nuevo libro.                                          *");
             System.out.println("9. Realizar un test de conexion.                                     *");
             System.out.println("10. Crear base de datos.                                             *");
             System.out.println("11. Reiniciar base de datos.                                         *");
@@ -78,8 +80,22 @@ public class BibliotecaRodriguez {
                     deleteUser(con, del_dni);
                     break;
                 case 5:
+                    showAllUsers(con);
+                    System.out.println("Introduzca el DNI del usuario a modificar. ");
+                    String dni_modif = scan.nextLine();
+                    updateUser(con, dni_modif);
                     break;
                 case 6:
+                System.out.println("Introduzca el nombre del libro a introducir: ");
+                    String nombre_libro = scan.nextLine();
+                    
+                    System.out.println("Introduzca el nombre del autor del libro: ");
+                    String autor = scan.nextLine();
+                    
+                    System.out.println("Introduzca una breve descripcion del libro: ");
+                    String desc = scan.nextLine();
+                    
+                    addBook(con, nombre_libro, autor, desc);
                     break;
                 case 9:
                     testConnection(con);
@@ -98,10 +114,14 @@ public class BibliotecaRodriguez {
                     System.out.println("Adios! ");
                     break;
                 default:
-                    System.out.println("Debe introducir una opcion valida. ");
+                f.mensajeColorido("ROJO","Debe introducir una opcion valida. ");
                     break;
             }
         } while (opcion!=0);
+    }
+
+    public static void updateUser(DataBaseConnection con, String dni){
+        con.updateUser(dni);
     }
 
     private static void deleteUser(DataBaseConnection con, String dni) {
@@ -115,7 +135,7 @@ public class BibliotecaRodriguez {
             System.out.println("");
             System.out.println("Usuario "+i);
             System.out.println("*****************************************************");
-            System.out.println(f.COLORES.get("CIAN".toUpperCase())+listaUs.get(i).toString()+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("CIAN",listaUs.get(i).toString());
             System.out.println("*****************************************************");
             System.out.println("");
         }
@@ -127,8 +147,8 @@ public class BibliotecaRodriguez {
     
     protected static void testConnection(DataBaseConnection con){
         if (con.testConnection()){
-            System.out.println(f.COLORES.get("VERDE")+"El test de conexion fue exitoso. "+f.COLORES.get("RESET"));
-        }else System.out.println(f.COLORES.get("ROJO")+"Se produjo un error al probar la conexion. "+f.COLORES.get("RESET"));
+            f.mensajeColorido("VERDE","El test de conexion fue exitoso. ");
+        }else f.mensajeColorido("ROJO","Se produjo un error al probar la conexion. ");
     }
     
     protected static void resetDataBase(DataBaseConnection con){
@@ -145,7 +165,7 @@ public class BibliotecaRodriguez {
         for (int i = 0; i < listUsers.size(); i++) {
             System.out.println("Usuario "+i);
             System.out.println("*****************************************************");
-            System.out.println(f.COLORES.get("CIAN".toUpperCase())+listUsers.get(i).toString()+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("CIAN",listUsers.get(i).toString());
             System.out.println("*****************************************************");
         }
     }
@@ -164,7 +184,11 @@ public class BibliotecaRodriguez {
         try {
             new ProcessBuilder(comando).inheritIO().start().waitFor();
         } catch (Exception e) {
-            System.out.println(f.COLORES.get("ROJO".toUpperCase())+"Se produjjo un error a la hora de limpiar la pantalla. "+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("ROJO","Se produjo un error a la hora de limpiar la pantalla. ");
         }
+    }
+
+    private static void addBook(DataBaseConnection con, String nombre_libro, String autor, String desc) {
+        con.addBook(nombre_libro, autor, desc);
     }
 }

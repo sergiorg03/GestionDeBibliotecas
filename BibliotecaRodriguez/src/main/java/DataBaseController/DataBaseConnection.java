@@ -71,7 +71,7 @@ public class DataBaseConnection {
             // Tabla Usuarios
             "CREATE TABLE usuarios(DNI VARCHAR2(9), nombre VARCHAR2(255), apellidos VARCHAR2(255), mail VARCHAR2(255), telf VARCHAR2(9), CONSTRAINT pk_usuario PRIMARY KEY (DNI))",
             // Tabla libros
-            "CREATE TABLE libros(id NUMBER(9), nombre VARCHAR2(255), descripcion VARCHAR2(255), autor VARCHAR2(255), telf VARCHAR2(9), CONSTRAINT pk_libros PRIMARY KEY(id))",
+            "CREATE TABLE libros(id NUMBER(9), nombre VARCHAR2(255), descripcion VARCHAR2(255), autor VARCHAR2(255), CONSTRAINT pk_libros PRIMARY KEY(id))",
             // Tabla prestamos
             "CREATE TABLE prestamos(libro_p NUMBER(9), usuario_p VARCHAR2(9), fecha_prestamo DATE, fechaDevolucion DATE, CONSTRAINT pk_prestamos PRIMARY KEY(libro_p, usuario_p), CONSTRAINT fk_prestamos_libros FOREIGN KEY (libro_p) REFERENCES libros(id), CONSTRAINT fk_prestamos_usuarios FOREIGN KEY (usuario_p) REFERENCES usuarios(DNI))",
             // Tabla Historial
@@ -93,11 +93,11 @@ public class DataBaseConnection {
             //pstmt.setString(2, "lo que queramos introducir en el insert");
             s.close();
 
-            System.out.println(f.COLORES.get("MORADO")+"Base de datos creada correctamente. "+f.COLORES.get("RESET"));
+            f.mensajeColorido("morado", "Base de datos creada correctamente. ");
 
         } catch (SQLException e) {
             //e.printStackTrace();
-            System.out.println(f.COLORES.get("ROJO")+"La base de datos ya fue creada con anterioridad. "+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("ROJO","La base de datos ya fue creada con anterioridad. "+f.COLORES.get("RESET".toUpperCase()));
         }
     }
 
@@ -126,14 +126,14 @@ public class DataBaseConnection {
             }
 
         } catch (SQLException e) {
-            System.out.println(f.COLORES.get("morado".toUpperCase())+"Error a la hora del borrado de tablas. "+f.COLORES.get("RESET".toUpperCase()));
-            e.printStackTrace();
+            f.mensajeColorido("ROJO", "Error a la hora del borrado de tablas. ");
+            //e.printStackTrace();
         }finally{
             try {
                 s.close();
             } catch (SQLException e) {
-                System.out.println(f.COLORES.get("morado".toUpperCase())+"Error en el cerrado de la instancia Statement. "+f.COLORES.get("RESET".toUpperCase()));
-                e.printStackTrace();
+                f.mensajeColorido("ROJO","Error en el cerrado de la instancia Statement. ");
+                //e.printStackTrace();
             }
         }
     }
@@ -151,11 +151,11 @@ public class DataBaseConnection {
             pstmt.setString(4, mail);
             pstmt.setString(5, telf);
 
-            int lineasAfectadas = pstmt.executeUpdate();
+            pstmt.executeUpdate();
 
-            System.out.println(f.COLORES.get("azul".toUpperCase())+"Se añadió al nuevo usuario correctamente. "+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("azul", "Se añadió al nuevo usuario correctamente. ");
         } catch (SQLException e) {
-            System.out.println(f.COLORES.get("morado".toUpperCase())+"Error en la insercion del nuevo usuario. "+f.COLORES.get("RESET".toUpperCase()));
+            f.mensajeColorido("morado","Error en la insercion del nuevo usuario. ");
         }
     }
 
@@ -179,8 +179,8 @@ public class DataBaseConnection {
                 
                 resultado.close();
             } catch (SQLException e) {
-                System.out.println();
-                e.printStackTrace();
+                f.mensajeColorido("ROJO","No se pudieron obtener datos. ");
+                //e.printStackTrace();
             }
         }else{
             String sql_dni = sql.concat(" WHERE UPPER(DNI) = UPPER(?)");
@@ -198,8 +198,8 @@ public class DataBaseConnection {
                 }
 
             } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println();
+                //e.printStackTrace();
+                f.mensajeColorido("ROJO", "No se pudo obtener al usuario indicado. ");
             }
             
         }
@@ -223,14 +223,40 @@ public class DataBaseConnection {
                     
                     pstmt.executeUpdate();
                     
-                    System.out.println(f.COLORES.get("AZUL".toUpperCase())+"Se borro al usuario correctamente. "+f.COLORES.get("RESET".toUpperCase()));
+                    f.mensajeColorido("azul", "Se borro al usuario correctamente. ");
                     
                 }catch(SQLException sqle){
-                    System.out.println(f.COLORES.get("ROJO".toUpperCase())+"Se produjo un error a la hora de borrar el usuario. "+f.COLORES.get("RESET".toUpperCase()));
+                    f.mensajeColorido("rojo", "Se produjo un error a la hora de borrar el usuario. ");
                 }
             }else{
-                System.out.println(f.COLORES.get("ROJO".toUpperCase())+"El DNI introducido no se corresponde con ningun usuario. "+f.COLORES.get("RESET".toUpperCase()));
+                f.mensajeColorido("rojo", "El DNI introducido no se corresponde con ningun usuario. ");
             }
+        }
+    }
+
+    //Terminar
+    public Usuarios updateUser(String dni) {
+        Usuarios u = new Usuarios();
+
+        
+
+        return u;
+    }
+
+    public void addBook(String nombre_libro, String autor, String desc) {
+        String sql = "INSERT INTO libros (nombre, autor, descripcion) VALUES (?,?,?)";
+        try (PreparedStatement pstmt = con.prepareStatement(sql)){
+            
+            pstmt.setString(1, nombre_libro);
+            pstmt.setString(2, autor);
+            pstmt.setString(3, desc);
+            
+            pstmt.executeQuery();
+            
+            f.mensajeColorido("azul","Se añadio el libro correctamente. ");
+            
+        } catch (SQLException e) {
+            f.mensajeColorido("rojo","Se produjo un error a la hora de ");
         }
     }
 }

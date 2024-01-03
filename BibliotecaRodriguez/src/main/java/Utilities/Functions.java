@@ -2,11 +2,14 @@ package Utilities;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class Functions {
-    
-    private final String[] LETRAS = {"T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S", "Q", "V", "H", "L", "C", "K", "E"};
-    public final Map<String, String> COLORES = new HashMap<String, String>(){
+
+    private final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[^@]+$"; 
+    private final String[] LETRAS = { "T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S",
+            "Q", "V", "H", "L", "C", "K", "E" };
+    public final Map<String, String> COLORES = new HashMap<String, String>() {
         {
             put("RESET", "\u001B[0m");
             put("NEGRO", "\u001B[30m");
@@ -52,40 +55,42 @@ public class Functions {
             put("AZUL_FONDO_INTENSO", "\u001B[104m");
             put("MORADO_FONDO_INTENSO", "\u001B[105m");
             put("CIAN_FONDO_INTENSO", "\u001B[106m");
-            put("BLANCO_FONDO_INTENSO", "\u001B[107m");    
+            put("BLANCO_FONDO_INTENSO", "\u001B[107m");
         }
     };
 
-    public boolean comprobarDNI(String dni){
+    public boolean comprobarDNI(String dni) {
         boolean valido = false;
-        
+
         if (dni.length() == 9) {
-        
+
             String nums = dni.substring(0, 8);
             String letra = dni.substring(8);
-            
-            if (esNumerico(nums) && letra.equalsIgnoreCase(LETRAS[(Integer.parseInt(nums)%23)])) {
+
+            if (esNumerico(nums) && letra.equalsIgnoreCase(LETRAS[(Integer.parseInt(nums) % 23)])) {
                 valido = true;
             }
         }
-        
+
         return valido;
     }
-    
-    public boolean esNumerico(String cadena){
+
+    public boolean esNumerico(String cadena) {
         boolean valido = false;
         try {
             Integer.parseInt(cadena);
             valido = true;
         } catch (NumberFormatException e) {
-        }finally{
-            return valido;
-        }
+        } 
+        return valido;
     }
-    
-    public void mensajeColorido(String color, String msg){
+
+    public void mensajeColorido(String color, String msg) {
         String c = COLORES.get(color.toUpperCase());
-        System.out.println(c+msg+COLORES.get("RESET".toUpperCase()));
+        System.out.println(c + msg + COLORES.get("RESET".toUpperCase()));
     }
-    
+
+    public boolean formatoEmail(String email) {
+        return Pattern.compile(EMAIL_REGEX).matcher(email).matches();
+    }
 }

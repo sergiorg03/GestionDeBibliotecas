@@ -58,9 +58,8 @@ public class DataBaseConnection {
         } catch (SQLException ex) {
             System.out.println("Se produjo un error al probar la conexion. ");
             //ex.printStackTrace();
-        } finally {
-            return exitosa;
         }
+        return exitosa;
     }
 
     public void createDatabase() {
@@ -73,9 +72,11 @@ public class DataBaseConnection {
             // Tabla libros
             "CREATE TABLE libros(id NUMBER(9), nombre VARCHAR2(255), descripcion VARCHAR2(255), autor VARCHAR2(255), CONSTRAINT pk_libros PRIMARY KEY(id))",
             // Tabla prestamos
-            "CREATE TABLE prestamos(libro_p NUMBER(9), usuario_p VARCHAR2(9), fecha_prestamo DATE, fechaDevolucion DATE, CONSTRAINT pk_prestamos PRIMARY KEY(libro_p, usuario_p), CONSTRAINT fk_prestamos_libros FOREIGN KEY (libro_p) REFERENCES libros(id), CONSTRAINT fk_prestamos_usuarios FOREIGN KEY (usuario_p) REFERENCES usuarios(DNI))",
+            "CREATE TABLE prestamos(libro_p NUMBER(9), usuario_p VARCHAR2(9), fecha_prestamo DATE, fechaDevolucion DATE, CONSTRAINT pk_prestamos PRIMARY KEY(libro_p, usuario_p), CONSTRAINT fk_prestamos_libros FOREIGN KEY (libro_p) REFERENCES libros(id), CONSTRAINT fk_prestamos_usuarios FOREIGN KEY (usuario_p) REFERENCES usuarios(DNI) ON UPDATE CASCADE ON DELETE CASCADE)",
             // Tabla Historial
-            //"",
+            "CREATE TABLE historial(fecha_prestamo DATE, id_libro NUMBER(9), dni_us VARCHAR2(9), CONSTRAINT pk_historia PRIMARY KEY (fecha_prestamo, id_libro, dni_us), CONSTRAINT fk_historial_libros FOREIGN KEY (id_libro) REFERENCES libros(id), CONSTRAINT fk_historial_usuarios FOREIGN KEY (dni_us) REFERENCES usuarios(dni))",
+            // SECUENCIA tabla libros
+            "CREATE SEQUENCE seq_id_libro INCREMENT BY 1 START WITH 1 MAXVALUE 999999999 NOCYCLE",
         };
 
         try {
@@ -235,16 +236,55 @@ public class DataBaseConnection {
     }
 
     //Terminar
-    public Usuarios updateUser(String dni) {
-        Usuarios u = new Usuarios();
-
+    public Usuarios getUser(String dni) {
+        Usuarios u = null;
+        if (dni != null && dni != "") {
         
+            final String SQL = "SELECT dni, nombre, apellidos, mail, telf FROM usuarios WHERE UPPER(DNI) = UPPER(?)";
 
+            try (PreparedStatement pstmt = con.prepareStatement(SQL)) {
+                
+                pstmt.setString(1, dni);
+
+                ResultSet r = pstmt.executeQuery();
+
+                while (r.next()) {
+                    u = new Usuarios();
+                    u.setDNI(r.getString(1));
+                    u.setNombre(r.getString(2));
+                    u.setApellidos(r.getString(3));
+                    u.setMail(r.getString(4));
+                    u.setTelf(r.getString(5));
+                }
+            } catch (SQLException e) {
+                f.mensajeColorido("ROJO", "Se produjo un error a la hora de obtener los datos del usuario indicado. ");
+            }
+
+            
+        }else;
         return u;
     }
 
+    public void updateUser(Usuarios u, String dni) {
+        final String SQL = "UPDATE usuarios SET DNI = ?, nombre = ?, apellidos = ?, mail = ?, telf = ? WHERE UPPER(DNI) = UPPER(?)";
+
+        try (PreparedStatement pstmt = con.prepareStatement(SQL)) {
+            pstmt.setString(1, u.getDNI());
+            pstmt.setString(2, u.getNombre());
+            pstmt.setString(3, u.getApellidos());
+            pstmt.setString(4, u.getMail());
+            pstmt.setString(5, u.getTelf());
+            pstmt.setString(6, dni);
+
+            pstmt.executeUpdate();
+            f.mensajeColorido("MORADO", "Usuario actualizado correctamente. ");
+        } catch (SQLException sqle) {
+            f.mensajeColorido("ROJO", "Se produjo un error a la hora de actualizar los datos del usuario. ");
+        }
+    }
+
     public void addBook(String nombre_libro, String autor, String desc) {
-        String sql = "INSERT INTO libros (nombre, autor, descripcion) VALUES (?,?,?)";
+        String sql = "INSERT INTO libros (id, nombre, autor, descripcion) VALUES (NEXT VALUE FOR seq_id_libro,?,?,?)";
         try (PreparedStatement pstmt = con.prepareStatement(sql)){
             
             pstmt.setString(1, nombre_libro);

@@ -189,7 +189,7 @@ public class BibliotecaRodriguez {
                     break;
                 case 0:
                     closeConnection(con);
-                    System.out.println("Adios! ");
+                    f.mensajeColorido("AMARILLO", "Adios! ");
                     break;
                 default:
                     f.mensajeColorido("ROJO", "Debe introducir una opcion valida. ");

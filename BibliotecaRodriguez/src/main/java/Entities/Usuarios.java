@@ -1,4 +1,4 @@
-package APP;
+package Entities;
 
 public class Usuarios {
 

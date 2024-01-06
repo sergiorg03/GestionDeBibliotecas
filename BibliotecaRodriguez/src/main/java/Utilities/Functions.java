@@ -1,14 +1,23 @@
 package Utilities;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class Functions {
 
-    private final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[^@]+$"; 
-    private final String[] LETRAS = { "T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S",
-            "Q", "V", "H", "L", "C", "K", "E" };
+    private final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[^@]+$";
+    private final String[] LETRAS = {"T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S",
+        "Q", "V", "H", "L", "C", "K", "E"};
     public final Map<String, String> COLORES = new HashMap<String, String>() {
         {
             put("RESET", "\u001B[0m");
@@ -81,7 +90,7 @@ public class Functions {
             Integer.parseInt(cadena);
             valido = true;
         } catch (NumberFormatException e) {
-        } 
+        }
         return valido;
     }
 
@@ -92,5 +101,66 @@ public class Functions {
 
     public boolean formatoEmail(String email) {
         return Pattern.compile(EMAIL_REGEX).matcher(email).matches();
+    }
+
+    public String readScript(String path) {
+        StringBuilder sql = new StringBuilder();
+
+        try (BufferedReader buf = new BufferedReader(new FileReader(path))) {
+            String line = "";
+
+            while ((line = buf.readLine()) != null) {
+                sql.append(line).append("\n");
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return sql.toString();
+    }
+
+    public List<String> readStatements(File file) {
+        List<String> ListStatements = new ArrayList<String>();
+
+        try (BufferedReader buf = new BufferedReader(new FileReader(file));) {
+            String SQL = "";
+            StringBuilder sentencia = new StringBuilder();
+
+            while ((SQL = buf.readLine()) != null) {
+                if (!SQL.trim().startsWith("--")) {
+                    sentencia.append(SQL);
+                    if (SQL.trim().endsWith(";")) {
+                        ListStatements.add(sentencia.toString());
+                        sentencia.setLength(0);
+                    }
+                }
+            }   
+        } catch (IOException e) {
+            //e.printStackTrace();
+            mensajeColorido("ROJO", "Se produjo un error a la hora de leer el fichero. ");
+        }
+        return ListStatements;
+    }
+
+    public List<String> readPLSQL(File file){
+        List<String> ListStatementsPLSQL = new ArrayList<String>();
+        
+        try(BufferedReader buf = new BufferedReader(new FileReader(file))){
+            String sql = "";
+            StringBuilder plsql = new StringBuilder();
+            
+            while ((sql = buf.readLine()) != null) {
+                if (!sql.trim().startsWith("--")) {
+                    plsql.append(sql).append(" ");
+                    if (sql.trim().endsWith("/")) {
+                        ListStatementsPLSQL.add(plsql.toString());
+                        plsql.setLength(0);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            mensajeColorido("ROJO", "Se produjo un error a la hora de leer las sentencias PLSQL. ");
+        }
+        return ListStatementsPLSQL;
     }
 }

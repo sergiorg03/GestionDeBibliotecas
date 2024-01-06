@@ -1,5 +1,6 @@
-package APP;
+package Entities;
 
+import Entities.Libros;
 import java.sql.Date;
 import java.time.LocalDate;
 import oracle.sql.DATE;

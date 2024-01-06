@@ -1,4 +1,4 @@
-package APP;
+package Entities;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
@@ -13,7 +13,7 @@ public class Libros {
     private String descripcion;
     private String autor;
     private Date fechaPublicacion;
-    private boolean disponibleEnBiblioteca;
+    private boolean disponible;
     
     // Constructor por defecto
     public Libros(){
@@ -22,17 +22,17 @@ public class Libros {
         this.descripcion = "";
         this.autor = "";
         this.fechaPublicacion = Date.valueOf(LocalDateTime.now().toLocalDate());
-        this.disponibleEnBiblioteca = true;
+        this.disponible = true;
     }
     
     // Constructor con parametros
-    public Libros(int id, String nombre, String desc, String autor, Date fechaPublicacion, boolean disponibleEnBiblioteca){
+    public Libros(int id, String nombre, String desc, String autor, Date fechaPublicacion, boolean disponible){
         this.id = id;
         this.nombre = nombre;
         this.descripcion = desc;
         this.autor = autor;
         this.fechaPublicacion = fechaPublicacion;
-        this.disponibleEnBiblioteca = disponibleEnBiblioteca;
+        this.disponible = disponible;
     }
     
     // Métodos GET
@@ -56,8 +56,8 @@ public class Libros {
         return fechaPublicacion;
     }
     
-    public boolean getDisponibleEnBiblioteca(){
-        return disponibleEnBiblioteca;
+    public boolean getDisponibilidad(){
+        return disponible;
     }
     
     // Métodos SET
@@ -81,12 +81,12 @@ public class Libros {
         this.fechaPublicacion = fechaPublicacion;
     }
     
-    public void setdisponibleEnBiblioteca(boolean disponibleEnBiblioteca){
-        this.disponibleEnBiblioteca = disponibleEnBiblioteca;
+    public void setdisponibilidad(boolean disponibleEnBiblioteca){
+        this.disponible = disponibleEnBiblioteca;
     } 
     
     @Override
     public String toString(){
-        return "El libro "+ this.nombre +" publicado por "+ this.autor +" el "+ this.fechaPublicacion +" trada de: "+ this.descripcion +"\n\nEsta disponible en la biblioteca: "+ ((this.disponibleEnBiblioteca)? "Si. ": "No. ");
+        return "El libro "+ this.nombre +" fue publicado por "+ this.autor +" el "+ this.fechaPublicacion +" trada de: "+ this.descripcion +"\n\nEsta disponible en la biblioteca: "+ ((this.disponible)? "Si. ": "No. ");
     }
 }

@@ -1,40 +1,41 @@
 package Entities;
 
-import Entities.Libros;
 import java.sql.Date;
 import java.time.LocalDate;
-import oracle.sql.DATE;
 
 public class Prestamos {
 
-    private Libros libros;
-    private Usuarios user;
+    private Libros libro_id;
+    private Usuarios user_DNI;
     private Date fechaPrestamo;
     private Date fechaDevolucion;
-    
+    private boolean devuelto;
+
     // Constructor por defecto
-    public Prestamos(){
-        this.libros = new Libros();
-        this.user = new Usuarios();
+    public Prestamos() {
+        this.libro_id = new Libros();
+        this.user_DNI = new Usuarios();
         this.fechaPrestamo = Date.valueOf(LocalDate.now().toString());
         this.fechaDevolucion = Date.valueOf(LocalDate.now().plusDays(30).toString());
+        this.devuelto = false;
     }
 
     // Constructor con parametros
-    public Prestamos(Libros libros, Usuarios user, Date fechaPrestamo, Date fechaDevolucion) {
-        this.libros = libros;
-        this.user = user;
+    public Prestamos(Libros libros, Usuarios user, Date fechaPrestamo, Date fechaDevolucion, boolean devuelto) {
+        this.libro_id = libros;
+        this.user_DNI = user;
         this.fechaPrestamo = fechaPrestamo;
         this.fechaDevolucion = fechaDevolucion;
+        this.devuelto = devuelto;
     }
 
     // Métodos GET
     public Libros getId_libro() {
-        return libros;
+        return libro_id;
     }
 
     public Usuarios getDni_us() {
-        return user;
+        return user_DNI;
     }
 
     public Date getFechaPrestamo() {
@@ -44,14 +45,18 @@ public class Prestamos {
     public Date getFechaDevolucion() {
         return fechaDevolucion;
     }
-    
-    // Métodos SET
-    public void setLibros(Libros libros) {
-        this.libros = libros;
+
+    public boolean getDevuelto() {
+        return this.devuelto;
     }
 
-    public void setUser(Usuarios user) {
-        this.user = user;
+    // Métodos SET
+    public void setLibro_id(Libros libros) {
+        this.libro_id = libros;
+    }
+
+    public void setUser_DNI(Usuarios user) {
+        this.user_DNI = user;
     }
 
     public void setFechaPrestamo(Date fechaPrestamo) {
@@ -62,8 +67,16 @@ public class Prestamos {
         this.fechaDevolucion = fechaDevolucion;
     }
 
+    public void setDevuelto(boolean devuelto) {
+        this.devuelto = devuelto;
+    }
+
     @Override
     public String toString() {
-        return "El libro "+ this.libros.getNombre() +" fue prestado al cliente "+ this.user.getNombre() +" el "+ this.fechaPrestamo +" y será devuelto el "+ this.fechaDevolucion;
+        return "El libro " + this.libro_id.getNombre() + " con id " + this.libro_id.getID()
+                + " fue prestado al cliente " + this.user_DNI
+                + " el "
+                + this.fechaPrestamo + " y será devuelto el " + this.fechaDevolucion + ".\nLo ha devuelto: "
+                + ((this.devuelto) ? "Si. " : "No. ");
     }
 }

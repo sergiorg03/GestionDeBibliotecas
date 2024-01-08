@@ -24,7 +24,7 @@ public class DataBaseConnection {
     private final String URL = "jdbc:oracle:thin:@localhost:1521:XE";
     private final String USER = "bibliotecaRodriguez";
     private final String PASSWORD = "bibliotecaRodriguez";
-    private final String rutaScripts = ".\\GestionDeBibliotecas\\BibliotecaRodriguez\\src\\SCRIPTS\\";
+    private final String rutaScripts = getRuta();
     private Connection con = null;
     Functions f = new Functions();
 
@@ -78,8 +78,15 @@ public class DataBaseConnection {
             con.commit();
             f.mensajeColorido("MORADO", "Guardado correctamente. ");
         } catch (SQLException ex) {
-            ex.printStackTrace();
-            f.mensajeColorido("ROJO", "Se produjo un error a la hora de guardar los datos. ");
+            // ex.printStackTrace();
+            try {
+                if (con.getAutoCommit()) {
+                    f.mensajeColorido("ROJO", "El autoguardado está activado. ");
+                } else
+                    f.mensajeColorido("ROJO", "Se produjo un error a la hora de guardar los datos. ");
+            } catch (SQLException e) {
+                f.mensajeColorido("ROJO", "Error a la hora de comprobar el autoguardado. ");
+            }
         }
     }
 
@@ -93,17 +100,30 @@ public class DataBaseConnection {
         }
     }
 
-    public void setAutoCommit() {
+    public void setAutoCommit(boolean changeVal) {
         try {
-            con.setAutoCommit(true);
+            con.setAutoCommit(changeVal);
         } catch (SQLException e) {
             f.mensajeColorido("ROJO", "Error al activar el autoguardado. ");
         }
     }
 
+    private String getRuta() {
+        String ruta = ".\\";
+        String rutaOpcional = ".\\GestionDeBibliotecas\\BibliotecaRodriguez\\src\\SCRIPTS\\";
+        File f = new File(rutaOpcional + "SCRIPT.sql");
+        System.out.println("Existe el fichero: " + f.exists());
+        if (f.exists()) {
+            ruta = f.getParent();
+            // System.out.println("DataBaseConnection: parent: " + ruta);
+        }
+
+        return ruta;
+    }
+
     public void relanzarScript() {
 
-        File script = new File(rutaScripts + "SCRIPT_v2.sql");
+        File script = new File(rutaScripts, "SCRIPT_v2.sql");
         List<String> ListaSentencias = new ArrayList<>();
 
         try (Statement s = con.createStatement()) {
@@ -124,7 +144,7 @@ public class DataBaseConnection {
     }
 
     public void relanzarPLSQL() throws SQLException, IOException {
-        File script = new File(rutaScripts + "plsql.sql");
+        File script = new File(rutaScripts, "plsql.sql");
         List<String> ListaSentencias = f.readPLSQL(script);
         for (int i = 0; i < ListaSentencias.size(); i++) {
             // System.out.println("Procedimiento " +
@@ -501,5 +521,81 @@ public class DataBaseConnection {
             e.printStackTrace();
             f.mensajeColorido("ROJO", "Se produjo un error a la hora de actualizar la informacion del libro. ");
         }
+    }
+
+    public void prestarLibro(Usuarios u, Libros l) {
+
+        try (CallableStatement cs = con.prepareCall("call p_realizarPrestamo(?,?)")) {
+
+            cs.setInt(1, l.getID());
+            cs.setString(2, u.getDNI());
+            cs.execute();
+
+            addHistory(u, l);
+            f.mensajeColorido("VERDE", "Prestamo realizado correctamente. ");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            f.mensajeColorido("ROJO", "Se produjo un error a la hora de prestar el libro. ");
+        }
+    }
+
+    private void addHistory(Usuarios u, Libros l) {
+        final String SQL = "INSERT INTO historial (dni_us, id_libro, fecha_prestamo_his) VALUES (?,?,SYSDATE)";
+
+        try (PreparedStatement pstmt = con.prepareStatement(SQL)) {
+            pstmt.setString(1, u.getDNI());
+            pstmt.setInt(2, l.getID());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            f.mensajeColorido("ROJO",
+                    "Se produjo un error a la hora de insertar el prestamo en el historial del usuario. ");
+        }
+    }
+
+    public void devolverLibro(Libros l, boolean devuelto) {
+        try (CallableStatement cs = con.prepareCall("call p_cambiarDisponibilidadLibro(?,?)")) {
+            cs.setInt(1, l.getID());
+            cs.setInt(2, 1);
+            cs.execute();
+        } catch (SQLException e) {
+            f.mensajeColorido("ROJO", "Error a la hora de cambiar la disponibilidad del libro. ");
+        }
+        cambiarEstadoDevueltoLibro(l.getID(), devuelto);
+    }
+
+    private void cambiarEstadoDevueltoLibro(int id, boolean devuelto) {
+        final String SQL = "UPDATE libros SET devuelto = ? WHERE id = ?";
+
+        try (PreparedStatement pstmt = con.prepareStatement(SQL)) {
+            pstmt.setString(1, "1");
+            pstmt.setInt(2, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            f.mensajeColorido("ROJO", "Se produjo un error a la hora de devolver el libro. ");
+        }
+    }
+
+    public List<Prestamos> getPrestamos(String dni) {
+        List<Prestamos> listaPrestamos = new ArrayList<>();
+        final String SQL = "SELECT libro_p, usuario_p, fecha_prestamo, fechaDevolucion, devuelto FROM prestamos WHERE UPPER(usuario_p) = ? AND devuelto = 0)";
+
+        try (PreparedStatement pstmt = con.prepareStatement(SQL)) {
+
+            pstmt.setString(1, dni);
+            ResultSet r = pstmt.executeQuery();
+
+            while (r.next()) {
+                Prestamos p = new Prestamos(
+                        getBookByField("ID", r.getString(1)).get(0),
+                        getUser(r.getString(2)),
+                        r.getDate(3),
+                        r.getDate(4),
+                        (r.getString(5) == "1" ? true : false));
+                listaPrestamos.add(p);
+            }
+        } catch (SQLException e) {
+            f.mensajeColorido("ROJO", "No se obtuvieron datos de prestamos del usuario indicado. ");
+        }
+        return listaPrestamos;
     }
 }

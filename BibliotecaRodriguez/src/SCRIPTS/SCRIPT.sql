@@ -21,22 +21,23 @@ CREATE TABLE libros(
     descripcion VARCHAR2(255),
     autor VARCHAR2(255),
     fechaPublicacion DATE,
-    disponible char(1)
+    disponible char(1) DEFAULT '1'
 );
 
 -- Tabla prestamos
 CREATE TABLE prestamos(
     libro_p NUMBER(9),
     usuario_p VARCHAR2(9),
-    fecha_prestamo DATE,
-    fechaDevolucion DATE
+    fecha_prestamo DATE DEFAULT SYSDATE,
+    fechaDevolucion DATE DEFAULT SYSDATE+30,
+    devuelto VARCHAR2(1) DEFAULT '0'
 );
 
 -- Tabla historial
 CREATE TABLE historial(
     id_libro NUMBER(9),
     dni_us VARCHAR2(9),
-    fecha_prestamo_his DATE
+    fecha_prestamo_his DATE DEFAULT SYSDATE
 );
 
 -- Tabla usuarios 
@@ -54,6 +55,7 @@ ALTER TABLE libros ADD CONSTRAINT ck_dispo_libros CHECK (disponible IN ('0', '1'
 ALTER TABLE prestamos ADD CONSTRAINT pk_prestamos PRIMARY KEY(libro_p, usuario_p);
 ALTER TABLE prestamos ADD CONSTRAINT fk_prestamos_libros FOREIGN KEY (libro_p) REFERENCES libros(id);
 ALTER TABLE prestamos ADD CONSTRAINT fk_prestamos_usuarios FOREIGN KEY (usuario_p) REFERENCES usuarios(DNI) ON DELETE CASCADE;
+ALTER TABLE prestamos ADD CONSTRAINT ck_devuelto CHECK (devuelto IN ('0', '1'));
 -- ALTER TABLE prestamos ADD CONSTRAINT ck_prestamos_usuarios CHECK (F_fechaCorrecta(fecha_prestamo) = 1);
 -- ALTER TABLE prestamos ADD CONSTRAINT ck_prestamos_usuarios CHECK (F_fechaCorrecta(fechaDevolucion) = 1);
 
@@ -102,6 +104,21 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
 END insertarDatosPrueba_historial;
+/
+
+CREATE OR REPLACE PROCEDURE p_cambiarDisponibilidadLibro
+    (v_id_libro IN libros.id%TYPE, v_disponible IN libros.disponible%TYPE)
+IS
+BEGIN
+    UPDATE libros 
+        SET disponible = v_disponible
+        WHERE id = v_id_libro;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('Libro no encontrado. ');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error'|| SQLCODE ||': '|| SQLERRM);
+END p_cambiarDisponibilidadLibro;
 /
 
 /* Bloque anonimo de prueba de la funcion f_fechaIntroducida

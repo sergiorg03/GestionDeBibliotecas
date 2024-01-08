@@ -31,3 +31,31 @@ EXCEPTION
         ROLLBACK;
 END p_insertarDatosPrueba_historial;
 /
+
+CREATE OR REPLACE PROCEDURE p_cambiarDisponibilidadLibro
+    (v_id_libro IN libros.id%TYPE, v_disponible IN libros.disponible%TYPE)
+IS
+BEGIN
+    UPDATE libros 
+        SET disponible = v_disponible
+        WHERE id = v_id_libro;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN 
+        DBMS_OUTPUT.PUT_LINE('Libro no encontrado. ');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error'|| SQLCODE ||': '|| SQLERRM);
+END p_cambiarDisponibilidadLibro;
+/
+
+CREATE OR REPLACE PROCEDURE p_realizarPrestamo
+    (v_id_libro IN libros.id%TYPE, v_dni_us IN usuarios.dni%TYPE)
+IS
+    v_fecha_prestamo DATE := SYSDATE;
+BEGIN
+    INSERT INTO prestamos (libro_p, usuario_p, fecha_prestamo, fechaDevolucion, devuelto) 
+        VALUES (v_id_libro, v_dni_us, v_fecha_prestamo, v_fecha_prestamo+30, '0');
+EXCEPTION
+    WHEN OTHERS THEN 
+        DBMS_OUTPUT.PUT_LINE('Error'|| SQLCODE ||': '|| SQLERRM);
+END p_realizarPrestamo;
+/

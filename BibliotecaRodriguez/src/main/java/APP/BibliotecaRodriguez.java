@@ -1,13 +1,10 @@
 package APP;
 
-import Entities.Usuarios;
-import Entities.Libros;
+import Entities.*;
 import DataBaseController.DataBaseConnection;
 import Utilities.Functions;
 import java.sql.Date;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -41,6 +38,8 @@ public class BibliotecaRodriguez {
             System.out.println("7. Mostrar todos los libros.                                         *");
             System.out.println("8. Buscar libro.                                                     *");
             System.out.println("9. Modificar un libro.                                               *");
+            System.out.println("10. Realizar un prestamo.                                            *");
+            System.out.println("11. Realizar una devolución.                                         *");
             System.out.println("80. Guardar datos.                                                   *");
             System.out.println("81. Volver a la version anterior.                                    *");
             System.out.println("82. Activar el autoguardado.                                         *");
@@ -106,7 +105,8 @@ public class BibliotecaRodriguez {
                     System.out.println("Introduzca una breve descripcion del libro: ");
                     String desc = scan.nextLine();
 
-                    System.out.println("Introduzca la fecha de publicacion del libro (FORMATO DE LA FECHA DIA-MES-AÑO (xx-xx-xxxx)): ");
+                    System.out.println(
+                            "Introduzca la fecha de publicacion del libro (FORMATO DE LA FECHA DIA-MES-AÑO (xx-xx-xxxx)): ");
                     String fecha = scan.nextLine();
 
                     System.out.println("Introduzca si está disponible o no el libro en la biblioteca: ");
@@ -118,45 +118,7 @@ public class BibliotecaRodriguez {
                     getBooks(con);
                     break;
                 case 8:
-                    List<String> listaCampos = new ArrayList<>();
-                     {
-                        {
-                            listaCampos.add("NOMBRE");
-                            listaCampos.add("AUTOR");
-                            listaCampos.add("DESCRIPCION");
-                            listaCampos.add("Fecha de publicacion".toUpperCase());
-                        }
-                    }
-                    ;
-
-                    String opcionesCampos = "";
-                    String campo = "";
-                    do {
-                        f.mensajeColorido("MORADO", "CAMPOS POR LOS QUE BUSCAR UN LIBRO: ");
-                        f.mensajeColorido("VERDE", "\tNOMBRE");
-                        f.mensajeColorido("VERDE", "\tAUTOR");
-                        f.mensajeColorido("VERDE", "\tDESCRIPCION");
-                        f.mensajeColorido("VERDE", "\tFecha de publicacion " + f.COLORES.get("ROJO") + "(FORMATO DIA-MES-AÑO xx-xx-xxxx)");
-                        f.mensajeColorido("MORADO_INTENSO", "Introduzca el campo por el que desee buscar: ");
-                        opcionesCampos = scan.nextLine();
-                        switch (opcionesCampos) {
-                            case "NOMBRE":
-                                campo = opcionesCampos.toUpperCase();
-                                break;
-                            case "AUTOR":
-                                campo = opcionesCampos.toUpperCase();
-                                break;
-                            case "DESCIPCION":
-                                campo = opcionesCampos.toUpperCase();
-                                break;
-                            case "FECHA DE PUBLICACION":
-                                campo = opcionesCampos.toUpperCase();
-                                break;
-                            default:
-                                f.mensajeColorido("rojo", "Debe introducir un campo valido. ");
-                                break;
-                        }
-                    } while (!listaCampos.contains(opcionesCampos));
+                    String campo = obtenerCampo(scan);
 
                     f.mensajeColorido("MORADO_INTENSO", "Introduzca el valor a buscar: ");
                     String valor = scan.nextLine();
@@ -169,6 +131,54 @@ public class BibliotecaRodriguez {
                     String id = scan.nextLine();
                     updateBook(con, id);
                     break;
+                case 10:
+                    // Pedimos lo datos del usuario
+                    f.mensajeColorido("AZUL", "Introduzca el DNI del usuario que obtendra el libro: ");
+                    String dni_pres = scan.nextLine().toUpperCase();
+                    Usuarios u = con.getUser(dni_pres);
+
+                    while (u == null) {
+                        f.mensajeColorido("MORADO",
+                                "No existe ningun usuario con dicho DNI, por favor introduzca un DNI valido. ");
+                        dni_pres = scan.nextLine().toUpperCase();
+                        u = con.getUser(dni_pres);
+                    }
+
+                    // Pedimos los datos del libro
+                    String campoPres = obtenerCampo(scan);
+                    f.mensajeColorido("AZUL", "Introduzca el " + campoPres + " a buscar en la lista de libros: ");
+                    String libro_pres = scan.nextLine().toUpperCase().trim();
+
+                    List<Libros> l = con.getBookByField(campoPres, libro_pres);
+
+                    while (l.size() == 0) {
+                        f.mensajeColorido("AZUL", "No existe ningún libro con el valor " + libro_pres + " en el campo "
+                                + campoPres + ", introduca un valor correcto en dicho campo. ");
+                        libro_pres = scan.nextLine().toUpperCase().trim();
+                        l = con.getBookByField(campoPres, libro_pres);
+                    }
+                    
+                    prestarLibro(con, u, l.getFirst());
+                    break;
+                case 11:
+                    f.mensajeColorido("AZUL", "Introduce el DNI del usuario que tiene el libro. ");
+                    String dni_dev = scan.nextLine().toUpperCase();
+
+                    Usuarios us = con.getUser(dni_dev);
+
+                    while (us == null) {
+                        f.mensajeColorido("MORADO",
+                                "No existe ningun usuario con dicho DNI, por favor introduzca un DNI valido. ");
+                        dni_dev = scan.nextLine().toUpperCase();
+                        u = con.getUser(dni_dev);
+                    }
+                    showPrestamosUS(con, us.getDNI());
+
+                    f.mensajeColorido("AZUL", "Introduzca el ID del libro a devolver: ");
+                    String id_dev = scan.nextLine().toUpperCase();
+
+                    devolverLibro(con, con.getBookByField("ID", id_dev).get(0));
+                    break;
                 case 80:
                     save(con);
                     break;
@@ -176,8 +186,11 @@ public class BibliotecaRodriguez {
                     rollBack(con);
                     break;
                 case 82:
-                    setAutoCommit(con);
-                    break;                    
+                    f.mensajeColorido("AMARILLO",
+                            "Si desea activar el autoguardado escriba 1. \nSi desea desactivar el autoguardado escriba 0. ");
+                    boolean activar = scan.nextLine() == "1" ? true : false;
+                    setAutoCommit(con, activar);
+                    break;
                 case 90:
                     testConnection(con);
                     break;
@@ -201,7 +214,7 @@ public class BibliotecaRodriguez {
     private static void closeConnection(DataBaseConnection con) {
         con.closeConnection();
     }
-    
+
     private static void save(DataBaseConnection con) {
         con.save();
     }
@@ -209,9 +222,17 @@ public class BibliotecaRodriguez {
     private static void rollBack(DataBaseConnection con) {
         con.rollBack();
     }
-    
-    private static void setAutoCommit(DataBaseConnection con){
-        con.setAutoCommit();
+
+    private static void setAutoCommit(DataBaseConnection con, boolean changeVal) {
+        con.setAutoCommit(changeVal);
+    }
+
+    private static void testConnection(DataBaseConnection con) {
+        if (con.testConnection()) {
+            f.mensajeColorido("VERDE", "El test de conexion fue exitoso. ");
+        } else {
+            f.mensajeColorido("ROJO", "Se produjo un error al probar la conexion. ");
+        }
     }
 
     private static void updateUser(DataBaseConnection con, String dni) {
@@ -317,18 +338,10 @@ public class BibliotecaRodriguez {
         con.registrarUsuario(DNI, nombre, apellidos, mail, telf);
     }
 
-    private static void testConnection(DataBaseConnection con) {
-        if (con.testConnection()) {
-            f.mensajeColorido("VERDE", "El test de conexion fue exitoso. ");
-        } else {
-            f.mensajeColorido("ROJO", "Se produjo un error al probar la conexion. ");
-        }
-    }
-
     private static void resetDataBase(DataBaseConnection con) {
         con.relanzarScript();
-        //con.borradoTablas();
-        //con.createDatabase();
+        // con.borradoTablas();
+        // con.createDatabase();
     }
 
     private static void mostrarUsuario(DataBaseConnection con, String dni) {
@@ -345,16 +358,19 @@ public class BibliotecaRodriguez {
         }
     }
 
-    private static void addBook(DataBaseConnection con, String nombre_libro, String autor, String desc, String fechaPublicacion, String disponible) {
+    private static void addBook(DataBaseConnection con, String nombre_libro, String autor, String desc,
+            String fechaPublicacion, String disponible) {
         con.addBook(nombre_libro, autor, desc, fechaPublicacion, disponible);
     }
 
     private static void getBooks(DataBaseConnection con) {
+        System.out.println();
         List<Libros> libros = con.getAllBooks();
         mostrarLibros(libros);
     }
 
     private static void searchBook(DataBaseConnection con, String campo, String nombre) {
+        System.out.println();
         List<Libros> libros = con.getBookByField(campo, nombre);
         mostrarLibros(libros);
     }
@@ -369,24 +385,25 @@ public class BibliotecaRodriguez {
                 System.out.println("");
             }
         } else {
-            f.mensajeColorido("ROJO", "No se pudo recaudar datos. ");
+            f.mensajeColorido("ROJO", "No se pudo obtener datos. ");
         }
     }
- 
-    private static void updateBook(DataBaseConnection con, String id){
+
+    private static void updateBook(DataBaseConnection con, String id) {
         Libros libro = con.getBookByField("ID", id).get(0);
-        //System.out.println(libro.toString());
+        // System.out.println(libro.toString());
         String opcion = "";
-        do {            
-            
+        do {
+
             System.out.println("");
             System.out.println("Introduzca el nombre del campo a modificar: ");
-            System.out.println("Campos disponibles: \n\tNOMBRE\n\tAUTOR\n\tFECHA DE PUBLICACION\n\tDESCRIPCION\n\tDISPONIBILIDAD EN TIENDA");
+            System.out.println(
+                    "Campos disponibles: \n\tNOMBRE\n\tAUTOR\n\tFECHA DE PUBLICACION\n\tDESCRIPCION\n\tDISPONIBILIDAD EN TIENDA");
             System.out.println("Introduzca SALIR para terminar la edición de los datos del libro. ");
             System.out.println("**************************************************");
             System.out.println("");
             opcion = scan.nextLine().toUpperCase().trim();
-            
+
             switch (opcion) {
                 case "NOMBRE":
                     f.mensajeColorido("azul", "Indique el nuevo nombre del libro: ");
@@ -399,7 +416,8 @@ public class BibliotecaRodriguez {
                     libro.setAutor(autor);
                     break;
                 case "FECHA DE PUBLICACION":
-                    f.mensajeColorido("azul", "Indique la fecha de publicacion del libro en formato xxxx-xx-xx (AÑO-MES-DIA): ");
+                    f.mensajeColorido("azul",
+                            "Indique la fecha de publicacion del libro en formato xxxx-xx-xx (AÑO-MES-DIA): ");
                     String fecPub = scan.nextLine();
                     libro.setFechaPublicacion(Date.valueOf(fecPub));
                     break;
@@ -409,9 +427,10 @@ public class BibliotecaRodriguez {
                     libro.setDescripcion(desc);
                     break;
                 case "DISPONIBILIDAD EN TIENDA":
-                    f.mensajeColorido("azul", "Indique si el libro se encuentra disponible o no en la tienda. \nSi el libro está disponible escriba 1. \nSi el libro no está disponible en la tienda escriba 0. ");
-                    String dispo = scan.nextLine().substring(0,1);
-                    libro.setdisponibilidad((dispo == "1"? true: false));
+                    f.mensajeColorido("azul",
+                            "Indique si el libro se encuentra disponible o no en la tienda. \nSi el libro está disponible escriba 1. \nSi el libro no está disponible en la tienda escriba 0. ");
+                    String dispo = scan.nextLine().substring(0, 1);
+                    libro.setdisponibilidad((dispo == "1" ? true : false));
                     break;
                 case "SALIR":
                     f.mensajeColorido("azul", "Saliendo de la edicion de libros..... ");
@@ -429,9 +448,57 @@ public class BibliotecaRodriguez {
         for (int i = 0; i < libros.size(); i++) {
             System.out.println();
             System.out.println("****************************************************");
-            f.mensajeColorido("AZUL", ("ID --> "+libros.get(i).getID() +"\nNombre --> "+ libros.get(i).getNombre() +"\nAutor --> "+libros.get(i).getAutor()));
+            f.mensajeColorido("AZUL", ("ID --> " + libros.get(i).getID() + "\nNombre --> " + libros.get(i).getNombre()
+                    + "\nAutor --> " + libros.get(i).getAutor()));
             System.out.println("****************************************************");
             System.out.println();
+        }
+    }
+
+    private static String obtenerCampo(Scanner scan) {
+        String campo = "";
+        List<String> listaCampos = List.of("NOMBRE", "AUTOR", "DESCRIPCION", "FECHA DE PUBLICACION");
+
+        String opcionesCampos = "";
+        while (true) {
+            f.mensajeColorido("MORADO", "CAMPOS POR LOS QUE BUSCAR UN LIBRO: ");
+            f.mensajeColorido("VERDE", "\tNOMBRE");
+            f.mensajeColorido("VERDE", "\tAUTOR");
+            f.mensajeColorido("VERDE", "\tDESCRIPCION");
+            f.mensajeColorido("VERDE",
+                    "\tFecha de publicacion " + f.COLORES.get("ROJO") + "(FORMATO DIA-MES-AÑO xx-xx-xxxx)");
+            f.mensajeColorido("MORADO_INTENSO", "Introduzca el campo por el que desee buscar: ");
+            opcionesCampos = scan.nextLine().toUpperCase();
+            if (!listaCampos.contains(opcionesCampos)) {
+                f.mensajeColorido("rojo", "Debe introducir un campo valido. ");
+            } else {
+                campo = opcionesCampos;
+                break;
+            }
+        }
+        return campo;
+    }
+
+    private static void prestarLibro(DataBaseConnection con, Usuarios u, Libros l) {
+        if (l.getDisponibilidad()) {
+            con.prestarLibro(u, l);
+        } else
+            f.mensajeColorido("ROJO",
+                    "No se puede prestar el libro ya que no se encuentra disponible en la biblioteca. ");
+
+    }
+
+    private static void devolverLibro(DataBaseConnection con, Libros l) {
+        con.devolverLibro(l, true);
+    }
+
+    private static void showPrestamosUS(DataBaseConnection con, String dni) {
+        List<Prestamos> prestamosUser = con.getPrestamos(dni);
+        for (int i = 0; i < prestamosUser.size(); i++) {
+            System.out.println();
+            f.mensajeColorido("AZUL", "*************************************************************");
+            f.mensajeColorido("CIAN", prestamosUser.get(i).toString());
+            f.mensajeColorido("AZUL", "*************************************************************");
         }
     }
 }

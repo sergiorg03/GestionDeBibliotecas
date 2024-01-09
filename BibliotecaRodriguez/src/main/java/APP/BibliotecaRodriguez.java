@@ -4,8 +4,6 @@ import Entities.*;
 import DataBaseController.DataBaseConnection;
 import Utilities.Functions;
 import java.sql.Date;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 

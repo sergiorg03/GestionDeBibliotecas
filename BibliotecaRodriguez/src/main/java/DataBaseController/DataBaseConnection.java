@@ -110,7 +110,7 @@ public class DataBaseConnection {
 
     private String getRuta() {
         String ruta = ".\\";
-        String rutaOpcional = ".\\GestionDeBibliotecas\\BibliotecaRodriguez\\src\\SCRIPTS\\";
+        String rutaOpcional = ".\\BibliotecaRodriguez\\src\\SCRIPTS\\";
         File f = new File(rutaOpcional + "SCRIPT.sql");
         System.out.println("Existe el fichero: " + f.exists());
         if (f.exists()) {
@@ -471,31 +471,32 @@ public class DataBaseConnection {
     public void addTestData(String[] query_us, String[] query_lib) {
         final String SQL_US = "insert into usuarios (DNI, nombre, apellidos, mail, telf) values ";
         final String SQL_LIB = "insert into libros (id, nombre, descripcion, autor, fechaPublicacion, disponible) values ";
-        for (int i = 0; i < query_us.length; i++) {
-            try (PreparedStatement pstmt = con.prepareStatement(SQL_US.concat(query_us[i]))) {
+
+        try {
+            // Bucle parala insercion de los usuarios
+            for (int i = 0; i < query_us.length; i++) {
+                PreparedStatement pstmt = con.prepareStatement(SQL_US.concat(query_us[i]));
                 String dni = DatosPrueba.generarDNI();
                 String telf = DatosPrueba.generarTelf();
                 pstmt.setString(1, dni);
                 pstmt.setString(2, telf);
                 pstmt.executeUpdate();
-
-                f.mensajeColorido("MORADO_INTENSO", "Datos de prueba añadidos correctamente. ");
-            } catch (SQLException sqle) {
-                sqle.printStackTrace();
-                f.mensajeColorido("ROJO", "Se produjo un error a la hora de insertar los datos de prueba. ");
+                pstmt.close();
             }
-        }
 
-        for (int i = 0; i < query_lib.length; i++) {
-            try (PreparedStatement pstmt = con.prepareStatement(SQL_LIB.concat(query_lib[i]))) {
+            // Bucle para la insercion de los libros
+            for (int i = 0; i < query_lib.length; i++) {
+                PreparedStatement pstmt = con.prepareStatement(SQL_LIB.concat(query_lib[i]));
                 pstmt.executeUpdate();
-
-                f.mensajeColorido("MORADO_INTENSO", "Datos de prueba añadidos correctamente. ");
-            } catch (SQLException sqle) {
-                sqle.printStackTrace();
-                f.mensajeColorido("ROJO", "Se produjo un error a la hora de insertar los datos de prueba. ");
+                pstmt.close();
             }
+            
+            f.mensajeColorido("MORADO_INTENSO", "Datos de prueba añadidos correctamente. ");
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+            f.mensajeColorido("ROJO", "Se produjo un error a la hora de insertar los datos de prueba. ");
         }
+
         try (CallableStatement cs = con.prepareCall("call p_insertardatosprueba_historial()")) {
             cs.execute();
         } catch (Exception e) {

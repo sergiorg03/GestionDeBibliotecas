@@ -4,6 +4,7 @@ import Entities.*;
 import DataBaseController.DataBaseConnection;
 import Utilities.Functions;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
@@ -56,6 +57,11 @@ public class BibliotecaRodriguez {
                     System.out.println("introduzca el DNI del usuario: ");
                     String DNI = scan.nextLine().toUpperCase();
 
+                    while (!f.comprobarDNI(DNI)) {
+                        f.mensajeColorido("MORADO", "El DNI introducido es erroneo, introduzca un DNI correcto: ");
+                        DNI = scan.nextLine().toUpperCase();
+                    }
+
                     System.out.println("introduzca el nombre del usuario: ");
                     String nombre = scan.nextLine();
 
@@ -64,9 +70,18 @@ public class BibliotecaRodriguez {
 
                     System.out.println("introduzca el Email del usuario: ");
                     String mail = scan.nextLine();
+                    while (!f.formatoEmail(mail)) {
+                        f.mensajeColorido("MORADO", "El Email introducido es erroneo, Introduzca un email correcto. ");                        
+                        mail = scan.nextLine();
+                    }
 
                     System.out.println("introduzca el número de telefono del usuario: ");
                     String telf = scan.nextLine();
+
+                    while (!f.formatoTelefono(telf)) {
+                        f.mensajeColorido("MORADO", "El número de teléfono introducido es erroneo, por favor introduzca un número de teléfono correcto. ");
+                        telf = scan.nextLine();
+                    }
 
                     registrarUsuario(con, DNI, nombre, apellidos, mail, telf);
                     break;
@@ -74,6 +89,10 @@ public class BibliotecaRodriguez {
                 case 2:
                     System.out.println("Introduzca el DNI de la persona a buscar: ");
                     String dni_mostrarPersona = scan.nextLine();
+                    while (!f.comprobarDNI(dni_mostrarPersona)) {
+                        f.mensajeColorido("MORADO", "El DNI introducido es erroneo, introduzca un DNI correcto: ");
+                        dni_mostrarPersona = scan.nextLine().toUpperCase();
+                    }
                     mostrarUsuario(con, dni_mostrarPersona);
                     break;
 
@@ -85,12 +104,20 @@ public class BibliotecaRodriguez {
                     showAllUsers(con);
                     System.out.println("Introduzca el DNI del usuario a borrar: ");
                     String del_dni = scan.nextLine();
+                    while (!f.comprobarDNI(del_dni)) {
+                        f.mensajeColorido("MORADO", "El DNI introducido es erroneo, introduzca un DNI correcto: ");
+                        del_dni = scan.nextLine().toUpperCase();
+                    }
                     deleteUser(con, del_dni);
                     break;
                 case 5:
                     showAllUsers(con);
                     System.out.println("Introduzca el DNI del usuario a modificar. ");
                     String dni_modif = scan.nextLine();
+                    while (!f.comprobarDNI(dni_modif)) {
+                        f.mensajeColorido("MORADO", "El DNI introducido es erroneo, introduzca un DNI correcto: ");
+                        dni_modif = scan.nextLine().toUpperCase();
+                    }
                     updateUser(con, dni_modif);
                     break;
                 case 6:
@@ -105,12 +132,27 @@ public class BibliotecaRodriguez {
 
                     System.out.println(
                             "Introduzca la fecha de publicacion del libro (FORMATO DE LA FECHA DIA-MES-AÑO (xx-xx-xxxx)): ");
-                    String fecha = scan.nextLine();
+                    Date fecha = null;
+                    try{
+                        fecha = Date.valueOf(scan.nextLine());
+                        while(!f.fechaCorrecta(fecha)) {
+                            f.mensajeColorido("MORADO", "La fecha introducida es erronea. Vuelva a introducir una fecha correcta: ");
+                            fecha = Date.valueOf(scan.nextLine());
+                        }
+                    }catch(IllegalArgumentException iae){
+                        f.mensajeColorido("MORADO", "El formato de la fecha es incorrecto. Se asignará la fecha actual por defecto. ");
+                        fecha = Date.valueOf(LocalDate.now().toString());
+                    }
 
                     System.out.println("Introduzca si está disponible o no el libro en la biblioteca: ");
                     String dispo = scan.nextLine().substring(0, 1);
 
-                    addBook(con, nombre_libro, autor, desc, fecha, dispo);
+                    while (!f.disponibilidadLibro(dispo)) {
+                        f.mensajeColorido("MORADO", "La disponibilidad del libro introducida es erronea, debe introducir una correcta. \nIntroduzca 0 si el libro NO está disponible. \nIntroduzca 1 si el libro SI está disponible en la biblioteca. ");
+                        dispo = scan.nextLine().substring(0, 1);
+                    }
+
+                    addBook(con, nombre_libro, autor, desc, fecha.toString(), dispo);
                     break;
                 case 7:
                     getBooks(con);
@@ -291,7 +333,7 @@ public class BibliotecaRodriguez {
                     case 5:
                         f.mensajeColorido("CIAN", "Introduzca el nuevo telefono del usuario: ");
                         String nuevoTelf = scan.nextLine();
-                        while (nuevoTelf.length() != 9 || !f.esNumerico(nuevoTelf)) {
+                        while (!f.formatoTelefono(nuevoTelf)) {
                             f.mensajeColorido("ROJO",
                                     "El número de telefono debe tener un formato correcto. Vuelva a introducir el número de telefono: ");
                             nuevoTelf = scan.nextLine();
@@ -416,8 +458,11 @@ public class BibliotecaRodriguez {
                 case "FECHA DE PUBLICACION":
                     f.mensajeColorido("azul",
                             "Indique la fecha de publicacion del libro en formato xxxx-xx-xx (AÑO-MES-DIA): ");
-                    String fecPub = scan.nextLine();
-                    libro.setFechaPublicacion(Date.valueOf(fecPub));
+                    Date fecPub = Date.valueOf(scan.nextLine());
+                    while(!f.fechaCorrecta(fecPub)){
+                        f.mensajeColorido("MORADO", "La fecha introducida es erronea. Introduzca una fecha correcta. ");
+                    }
+                    libro.setFechaPublicacion(fecPub);
                     break;
                 case "DESCRIPCION":
                     f.mensajeColorido("azul", "Indique la nueva descripcion del libro: ");

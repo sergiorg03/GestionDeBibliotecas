@@ -4,17 +4,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.sql.Date;
 
 public class Functions {
 
     private final String EMAIL_REGEX = "^[^@]+@[^@]+\\.[^@]+$";
     private final String[] LETRAS = { "T", "R", "W", "A", "G", "M", "Y", "F", "P", "D", "X", "B", "N", "J", "Z", "S",
             "Q", "V", "H", "L", "C", "K", "E" };
+    private final Date fechaActual = Date.valueOf(LocalDate.now().toString());
     public final Map<String, String> COLORES = new HashMap<String, String>() {
         {
             put("RESET", "\u001B[0m");
@@ -100,6 +103,10 @@ public class Functions {
         return Pattern.compile(EMAIL_REGEX).matcher(email).matches();
     }
 
+    public boolean formatoTelefono(String telf) {
+        return (telf.length() == 9 && esNumerico(telf))? true: false;
+    }
+
     public String readScript(String path) {
         StringBuilder sql = new StringBuilder();
 
@@ -153,5 +160,19 @@ public class Functions {
         }
         buf.close();
         return ListStatementsPLSQL;
+    }
+
+    public boolean fechaCorrecta(Date fecha) {
+        return fecha.before(fechaActual) ? true : false;
+    }
+    
+    public boolean disponibilidadLibro(String disponibilidad) {
+        boolean disponible = false;
+
+        if (esNumerico(disponibilidad) && disponibilidad.length() == 1 && (disponibilidad.equals("1") || disponibilidad.equals("0"))) {
+            disponible = true;
+        }
+
+        return disponible;
     }
 }

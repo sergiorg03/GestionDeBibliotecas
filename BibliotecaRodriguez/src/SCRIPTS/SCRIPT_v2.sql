@@ -10,7 +10,7 @@ CREATE TABLE usuarios(
     DNI VARCHAR2(9),
     nombre VARCHAR2(255),
     apellidos VARCHAR2(255),
-    mail VARCHAR2(255),
+    mail VARCHAR2(255) UNIQUE,
     telf VARCHAR2(9)
 );
 

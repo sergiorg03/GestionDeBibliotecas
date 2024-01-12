@@ -112,7 +112,7 @@ public class DataBaseConnection {
         String ruta = ".\\";
         String rutaOpcional = ".\\BibliotecaRodriguez\\src\\SCRIPTS\\";
         File f = new File(rutaOpcional + "SCRIPT.sql");
-        System.out.println("Existe el fichero: " + f.exists());
+        //System.out.println("Existe el fichero: " + f.exists());
         if (f.exists()) {
             ruta = f.getParent();
             // System.out.println("DataBaseConnection: parent: " + ruta);
